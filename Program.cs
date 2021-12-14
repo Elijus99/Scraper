@@ -1,5 +1,4 @@
 ﻿using System;
-using HtmlAgilityPack;
 using System.Collections.Generic;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
