@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using System.Globalization;
-using System.Text;
-using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System.ComponentModel;
@@ -27,11 +24,19 @@ namespace Scraper
             DateTime departDate = DateTime.Now.AddDays(daysTillDeparture);
             DateTime returnDate = DateTime.Now.AddDays(daysTillReturn);
 
-            //Departure date selection
+            selectDepartDate(driver, departDate);
+            selectReturnDate(driver, returnDate);
+
+            IWebElement searchFlightButton = driver.FindElement(By.Id("searchFlight"));
+            searchFlightButton.Click();
+        }
+
+        public static void selectDepartDate(IWebDriver driver, DateTime departDate)
+        {
             IWebElement departCalendarButton = driver.FindElement(By.CssSelector(".col-md-6.fromwrap"));
             departCalendarButton = departCalendarButton.FindElement(By.ClassName("ui-datepicker-trigger"));
             departCalendarButton.Click();
-            //Departure date selection: Year
+            //Date selection: Year
             IWebElement departYear = driver.FindElement(By.ClassName("ui-datepicker-year"));
             IWebElement nextMonthButton = driver.FindElement(By.ClassName("ui-datepicker-next"));
             while (departYear.Text != departDate.Year.ToString())
@@ -39,10 +44,10 @@ namespace Scraper
                 nextMonthButton.Click();
                 departYear = driver.FindElement(By.ClassName("ui-datepicker-year"));
             }
-            //Departure date selection: Month
+            //Date selection: Month
             SelectElement selectMonth = new SelectElement(driver.FindElement(By.ClassName("ui-datepicker-month")));
             selectMonth.SelectByValue((departDate.Month - 1).ToString());
-            //Departure date selection: Day
+            //Date selection: Day
             IWebElement dayTable = driver.FindElement(By.ClassName("ui-datepicker-calendar"));
             IList<IWebElement> columns = dayTable.FindElements(By.TagName("td"));
             foreach (IWebElement cell in columns)
@@ -53,25 +58,27 @@ namespace Scraper
                     break;
                 }
             }
+        }
 
-            //Return date selection
+        public static void selectReturnDate(IWebDriver driver, DateTime returnDate)
+        {
             IWebElement returnCalendarButton = driver.FindElement(By.CssSelector(".col-md-6.towrap"));
             returnCalendarButton = returnCalendarButton.FindElement(By.ClassName("ui-datepicker-trigger"));
             returnCalendarButton.Click();
-            //Return date selection: Year
+            //Date selection: Year
             IWebElement returnYear = driver.FindElement(By.ClassName("ui-datepicker-year"));
-            nextMonthButton = driver.FindElement(By.ClassName("ui-datepicker-next"));
+            IWebElement nextMonthButton = driver.FindElement(By.ClassName("ui-datepicker-next"));
             while (returnYear.Text != returnDate.Year.ToString())
             {
                 nextMonthButton.Click();
                 returnYear = driver.FindElement(By.ClassName("ui-datepicker-year"));
             }
-            //Return date selection: Month
-            selectMonth = new SelectElement(driver.FindElement(By.ClassName("ui-datepicker-month")));
+            //Date selection: Month
+            SelectElement selectMonth = new SelectElement(driver.FindElement(By.ClassName("ui-datepicker-month")));
             selectMonth.SelectByValue((returnDate.Month - 1).ToString());
-            //Return date selection: Day
-            dayTable = driver.FindElement(By.ClassName("ui-datepicker-calendar"));
-            columns = dayTable.FindElements(By.TagName("td"));
+            //Date selection: Day
+            IWebElement dayTable = driver.FindElement(By.ClassName("ui-datepicker-calendar"));
+            IList<IWebElement> columns = dayTable.FindElements(By.TagName("td"));
             foreach (IWebElement cell in columns)
             {
                 if (cell.Text.Equals(returnDate.Day.ToString()))
@@ -80,43 +87,71 @@ namespace Scraper
                     break;
                 }
             }
-
-            IWebElement searchFlightButton = driver.FindElement(By.Id("searchFlight"));
-            searchFlightButton.Click();
         }
 
         public static List<FlightData> selectFlights(IWebDriver driver)
         {
             List<FlightData> flightsData = new();
-
-            
-
-            IWebElement departFlights = driver.FindElement(By.ClassName("fly5-depart"));
-            departFlights = departFlights.FindElement(By.ClassName("fly5-results"));
-            IList<IWebElement> departFlightsList = departFlights.FindElements(By.ClassName("fly5-result"));
-
-            IWebElement returnFlights = driver.FindElement(By.ClassName("fly5-return"));
-            returnFlights = returnFlights.FindElement(By.ClassName("fly5-results"));
-            IList<IWebElement> returnFlightsList = returnFlights.FindElements(By.ClassName("fly5-result"));
-
-            for (int i = 0; i < departFlightsList.Count; i++)
+            if (driver.FindElements(By.ClassName("alert-danger")).Count == 0)
             {
-                for (int j = 0; j < returnFlightsList.Count; j++)
-                {
-                    IWebElement departFlight = departFlightsList[i];
-                    selectFlightClass(departFlight, driver);
-                    IWebElement returnFlight = returnFlightsList[j];
-                    selectFlightClass(returnFlight, driver);
-                    IWebElement continueButton = driver.FindElement(By.Id("continue-btn"));
-                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
-                    js.ExecuteScript("arguments[0].click()", continueButton);
+                IWebElement departFlights = driver.FindElement(By.ClassName("fly5-depart"));
+                departFlights = departFlights.FindElement(By.ClassName("fly5-results"));
+                IList<IWebElement> departFlightsList = departFlights.FindElements(By.ClassName("fly5-result"));
+                List<string> departFlightsXPathList = createFlightsXPath(departFlightsList, true);
 
-                    flightsData.Add(scrapeFlightData(driver));
-                    driver.Navigate().Back();
+                IWebElement returnFlights = driver.FindElement(By.ClassName("fly5-return"));
+                returnFlights = returnFlights.FindElement(By.ClassName("fly5-results"));
+                IList<IWebElement> returnFlightsList = returnFlights.FindElements(By.ClassName("fly5-result"));
+                List<string> returnFlightsXPathList = createFlightsXPath(returnFlightsList, false);
+
+                for (int i = 0; i < departFlightsXPathList.Count; i++)
+                {
+                    for (int j = 0; j < returnFlightsXPathList.Count; j++)
+                    {
+                        IWebElement departFlight = driver.FindElement(By.XPath(departFlightsXPathList[i]));
+                        selectFlightClass(departFlight, driver);
+                        IWebElement returnFlight = driver.FindElement(By.XPath(returnFlightsXPathList[j]));
+                        selectFlightClass(returnFlight, driver);
+                        IWebElement continueButton = driver.FindElement(By.Id("continue-btn"));
+                        IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                        js.ExecuteScript("arguments[0].click()", continueButton);
+
+                        flightsData.Add(scrapeFlightData(driver));
+                        driver.Navigate().Back();
+                    }
+                }
+
+                return flightsData;
+            }
+            else
+            {
+                return flightsData;
+            }
+        }
+
+        public static List<string> createFlightsXPath (IList<IWebElement> flightsList, bool flightsType)
+        {
+            List<string> flightsXPathList = new();
+            //Depart flights
+            if(flightsType)
+            {
+                for (int i = 1; i <= flightsList.Count; i++)
+                {
+                    string xpath = $"//*[@id=\"book-form\"]/div[1]/div[2]/div[{i}]";
+                    flightsXPathList.Add(xpath);
+                }
+            }
+            //Return flights
+            else
+            {
+                for (int i = 1; i <= flightsList.Count; i++)
+                {
+                    string xpath = $"//*[@id=\"book-form\"]/div[2]/div[2]/div[{i}]";
+                    flightsXPathList.Add(xpath);
                 }
             }
 
-            return flightsData;
+            return flightsXPathList;
         }
 
         public static void selectFlightClass (IWebElement flight, IWebDriver driver)
@@ -171,7 +206,7 @@ namespace Scraper
             return flightData;
         }
 
-        public static void writeToCsv (List<FlightData> flightsData)
+        public static void writeToCsv (List<FlightData> flightsData, string fileName)
         {
             var lines = new List<string>();
             IEnumerable<PropertyDescriptor> props = TypeDescriptor.GetProperties(typeof(FlightData)).OfType<PropertyDescriptor>();
@@ -179,7 +214,17 @@ namespace Scraper
             lines.Add(header);
             var valueLines = flightsData.Select(row => string.Join(";", header.Split(';').Select(a => row.GetType().GetProperty(a).GetValue(row, null))));
             lines.AddRange(valueLines);
-            File.WriteAllLines("flightsData.csv", lines.ToArray());
+            File.WriteAllLines(fileName, lines.ToArray());
+        }
+
+        public static void appendToCsv (List<FlightData> flightsData, string fileName)
+        {
+            var lines = new List<string>();
+            IEnumerable<PropertyDescriptor> props = TypeDescriptor.GetProperties(typeof(FlightData)).OfType<PropertyDescriptor>();
+            var header = string.Join(";", props.ToList().Select(x => x.Name));
+            var valueLines = flightsData.Select(row => string.Join(";", header.Split(';').Select(a => row.GetType().GetProperty(a).GetValue(row, null))));
+            lines.AddRange(valueLines);
+            File.AppendAllLines(fileName, lines.ToArray());
         }
     }
 }

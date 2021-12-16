@@ -22,9 +22,22 @@ namespace Scraper
             
             Functions.searchFlights(driver, departureAirport, arrivalAirport, daysTillDeparture, daysTillReturn);
 
-            List<FlightData> flightsData = Functions.selectFlights(driver);
+            List<FlightData> flightsData1 = Functions.selectFlights(driver);
 
-            Functions.writeToCsv(flightsData);
+            string fileName = "flightsData.csv";
+            Functions.writeToCsv(flightsData1, fileName);
+
+
+            driver.Url = "https://www.fly540.com";
+
+            daysTillDeparture = 20;
+            daysTillReturn = daysTillDeparture + tripDuration;
+
+            Functions.searchFlights(driver, departureAirport, arrivalAirport, daysTillDeparture, daysTillReturn);
+
+            List<FlightData> flightsData2 = Functions.selectFlights(driver);
+
+            Functions.appendToCsv(flightsData2, fileName);
         }
     }
 }
