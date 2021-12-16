@@ -1,6 +1,6 @@
 # Scraper
  
-Fly540 airline website's (https://www.fly540.com/) data scraper
+Data scraper for https://www.fly540.com/ flights.
 
 ## How to install and run
 
