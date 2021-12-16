@@ -1,0 +1,7 @@
+outbound_departure_airport;outbound_arrival_airport;outbound_departure_time;outbound_arrival_time;inbound_departure_airport;inbound_arrival_airport;inbound_departure_time;inbound_arrival_time;total_price;taxes
+NBO;MBA;Sun 26 Dec 8:00am;Sun 26 Dec 9:10am;MBA;NBO;Sun 02 Jan 7:20pm;Sun 02 Jan 8:30pm;327.00;12.00
+NBO;MBA;Sun 26 Dec 6:40pm;Sun 26 Dec 7:50pm;MBA;NBO;Sun 02 Jan 7:20pm;Sun 02 Jan 8:30pm;293.00;12.00
+NBO;MBA;Wed 05 Jan 6:00am;Wed 05 Jan 7:10am;MBA;NBO;Wed 12 Jan 7:30am;Wed 12 Jan 8:40am;96.00;12.00
+NBO;MBA;Wed 05 Jan 6:00am;Wed 05 Jan 7:10am;MBA;NBO;Wed 12 Jan 7:20pm;Wed 12 Jan 8:30pm;259.00;12.00
+NBO;MBA;Wed 05 Jan 5:40pm;Wed 05 Jan 6:50pm;MBA;NBO;Wed 12 Jan 7:30am;Wed 12 Jan 8:40am;92.00;12.00
+NBO;MBA;Wed 05 Jan 5:40pm;Wed 05 Jan 6:50pm;MBA;NBO;Wed 12 Jan 7:20pm;Wed 12 Jan 8:30pm;255.00;12.00
